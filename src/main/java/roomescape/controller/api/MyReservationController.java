@@ -30,7 +30,7 @@ public class MyReservationController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteWaiting(@PathVariable Long id) {
-        myReservationService.removeWaiting(id);
+    public void deleteWaiting(@AuthMember Member member, @PathVariable Long id) {
+        myReservationService.removeWaiting(member, id);
     }
 }

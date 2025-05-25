@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import roomescape.dto.response.MyReservationResponse;
 import roomescape.entity.Member;
 import roomescape.entity.Waiting;
+import roomescape.exception.custom.AuthenticatedException;
 import roomescape.exception.custom.NotFoundException;
 import roomescape.repository.jpa.JpaReservationRepository;
 import roomescape.repository.jpa.JpaWaitingRepository;
@@ -49,9 +50,13 @@ public class MyReservationService {
             .toList();
     }
 
-    public void removeWaiting(Long id) {
+    public void removeWaiting(Member member, Long id) {
         Waiting waiting = waitingRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("waiting"));
+
+        if (!waiting.isSameAs(member)) {
+            throw new AuthenticatedException("삭제 권한 없음");
+        }
 
         waitingRepository.deleteById(waiting.getId());
     }

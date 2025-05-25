@@ -56,6 +56,10 @@ public class Waiting {
         this.createdAt = createdAt;
     }
 
+    public boolean isSameAs(Member member) {
+        return this.member.getId().equals(member.getId());
+    }
+
     public Long getId() {
         return id;
     }

@@ -18,6 +18,7 @@ import roomescape.entity.Reservation;
 import roomescape.entity.ReservationTime;
 import roomescape.entity.Theme;
 import roomescape.entity.Waiting;
+import roomescape.exception.custom.AuthenticatedException;
 import roomescape.exception.custom.NotFoundException;
 import roomescape.repository.jpa.JpaMemberRepository;
 import roomescape.repository.jpa.JpaReservationRepository;
@@ -89,7 +90,7 @@ class MyReservationServiceTest {
         Waiting waiting = new Waiting(member2, date, time, theme, createdAt);
         waitingRepository.save(waiting);
 
-        myReservationService.removeWaiting(waiting.getId());
+        myReservationService.removeWaiting(member2, waiting.getId());
 
         assertThat(waitingRepository.findById(waiting.getId()).isPresent()).isFalse();
     }
@@ -113,9 +114,33 @@ class MyReservationServiceTest {
         Waiting waiting = new Waiting(member2, date, time, theme, createdAt);
         waitingRepository.save(waiting);
 
-        assertThatThrownBy(() -> myReservationService.removeWaiting(waiting.getId() + 1))
+        assertThatThrownBy(() -> myReservationService.removeWaiting(member2, waiting.getId() + 1))
             .isInstanceOf(NotFoundException.class)
             .hasMessageContaining("waiting");
+    }
+
+    @Test
+    @DisplayName("다른 사용자가 예약 대기를 삭제하면 예외가 발생한다.")
+    void removeWaitingWithAnotherMember() {
+        Member member1 = saveMember(1L);
+        Member member2 = saveMember(2L);
+        Theme theme = saveTheme(1L);
+        ReservationTime time = saveTime(LocalTime.of(10, 0));
+        LocalDate date = LocalDate.of(2025, 4, 28);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 4, 28, 1, 0);
+
+        em.flush();
+        em.clear();
+
+        Reservation reservation = new Reservation(member1, date, time, theme);
+        reservationRepository.save(reservation);
+
+        Waiting waiting = new Waiting(member2, date, time, theme, createdAt);
+        waitingRepository.save(waiting);
+
+        assertThatThrownBy(() -> myReservationService.removeWaiting(member1, waiting.getId()))
+            .isInstanceOf(AuthenticatedException.class)
+            .hasMessageContaining("삭제 권한 없음");
     }
 
     private Member saveMember(Long tmp) {
