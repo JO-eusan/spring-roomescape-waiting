@@ -40,23 +40,20 @@ public class Waiting {
     @Enumerated(value = EnumType.STRING)
     private ReservationStatus status;
 
-    @Column(nullable = false)
-    private Long rank;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     public Waiting() {
     }
 
-    public Waiting(Member member, LocalDate date, ReservationTime time, Theme theme, Long rank) {
+    public Waiting(Member member, LocalDate date, ReservationTime time, Theme theme,
+        LocalDateTime createdAt) {
         this.member = member;
         this.date = date;
         this.time = time;
         this.theme = theme;
         this.status = ReservationStatus.WAITING;
-        this.rank = rank;
-    }
-
-    public void minusRank(Long rank) {
-        this.rank -= rank;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -83,7 +80,7 @@ public class Waiting {
         return status;
     }
 
-    public Long getRank() {
-        return rank;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }

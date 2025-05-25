@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -95,11 +96,12 @@ public class WaitingServiceTest {
         Theme theme = saveTheme(1L);
         ReservationTime time = saveTime(LocalTime.of(10, 0));
         LocalDate date = LocalDate.of(5000, 4, 28);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 4, 28, 1, 0);
 
         em.flush();
         em.clear();
 
-        Waiting waiting = new Waiting(member, date, time, theme, 1L);
+        Waiting waiting = new Waiting(member, date, time, theme, createdAt);
         waitingRepository.save(waiting);
 
         WaitingRequest request = new WaitingRequest(date, time.getId(), theme.getId());
@@ -116,11 +118,12 @@ public class WaitingServiceTest {
         Theme theme = saveTheme(1L);
         ReservationTime time = saveTime(LocalTime.of(10, 0));
         LocalDate date = LocalDate.of(5000, 4, 28);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 4, 28, 1, 0);
 
         em.flush();
         em.clear();
 
-        Waiting waiting = new Waiting(member, date, time, theme, 1L);
+        Waiting waiting = new Waiting(member, date, time, theme, createdAt);
         waitingRepository.save(waiting);
 
         waitingService.updateWaitingAndReservationStatus(waiting.getId(), WaitingStatus.APPROVED);
@@ -138,11 +141,12 @@ public class WaitingServiceTest {
         Theme theme = saveTheme(1L);
         ReservationTime time = saveTime(LocalTime.of(10, 0));
         LocalDate date = LocalDate.of(5000, 4, 28);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 4, 28, 1, 0);
 
         em.flush();
         em.clear();
 
-        Waiting waiting = new Waiting(member, date, time, theme, 1L);
+        Waiting waiting = new Waiting(member, date, time, theme, createdAt);
         waitingRepository.save(waiting);
 
         waitingService.updateWaitingAndReservationStatus(waiting.getId(), WaitingStatus.DENIED);

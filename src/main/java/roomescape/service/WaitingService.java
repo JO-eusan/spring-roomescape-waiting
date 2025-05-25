@@ -57,14 +57,11 @@ public class WaitingService {
         Theme theme = themeRepository.findById(request.themeId())
             .orElseThrow(() -> new NotFoundException("theme"));
 
-        long rank = waitingRepository.countByDateAndThemeIdAndTimeId(date, theme.getId(),
-            time.getId());
-
         validateDateTimeAfterNow(now, date, time);
         validateDuplicateReservationAboutMemberId(member, request);
 
         return WaitingResponse.from(
-            waitingRepository.save(new Waiting(member, request.date(), time, theme, rank + 1)));
+            waitingRepository.save(new Waiting(member, request.date(), time, theme, now)));
     }
 
     private void validateDateTimeAfterNow(LocalDateTime now, LocalDate date, ReservationTime time) {
@@ -109,24 +106,10 @@ public class WaitingService {
             waiting.getTheme()));
 
         waitingRepository.deleteById(waiting.getId());
-        updateWaitingRanksAfter(waiting);
     }
 
     private void denyWaiting(Waiting waiting) {
         waitingRepository.deleteById(waiting.getId());
-        updateWaitingRanksAfter(waiting);
-    }
-
-    private void updateWaitingRanksAfter(Waiting waiting) {
-        List<Waiting> remainings = waitingRepository.findByDateAndThemeIdAndTimeId(
-            waiting.getDate(), waiting.getTime().getId(), waiting.getTheme().getId());
-
-        long baseRank = waiting.getRank();
-        for (Waiting remaining : remainings) {
-            if (remaining.getRank() > baseRank) {
-                remaining.minusRank(1L);
-            }
-        }
     }
 
     private void validateDateTimeAfterNow(LocalDate date, ReservationTime time) {

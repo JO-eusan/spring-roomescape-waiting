@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,6 +56,7 @@ class MyReservationServiceTest {
         Theme theme2 = saveTheme(2L);
         ReservationTime time = saveTime(LocalTime.of(10, 0));
         LocalDate date = LocalDate.of(2025, 4, 28);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 4, 28, 1, 0);
 
         em.flush();
         em.clear();
@@ -62,21 +64,21 @@ class MyReservationServiceTest {
         Reservation reservation = new Reservation(member, date, time, theme1);
         reservationRepository.save(reservation);
 
-        Waiting waiting = new Waiting(member, date, time, theme2, 1L);
+        Waiting waiting = new Waiting(member, date, time, theme2, createdAt);
         waitingRepository.save(waiting);
 
         assertThat(myReservationService.findReservationsAndWaitingsByMemberId(member)).hasSize(2);
     }
 
     @Test
-    @DisplayName("사용자가 예약 대기를 취소하면 나머지 대기 순번이 앞당겨 진다.")
+    @DisplayName("사용자가 예약 대기를 취소할 수 있다.")
     void removeWaiting() {
         Member member1 = saveMember(1L);
         Member member2 = saveMember(2L);
-        Member member3 = saveMember(3L);
         Theme theme = saveTheme(1L);
         ReservationTime time = saveTime(LocalTime.of(10, 0));
         LocalDate date = LocalDate.of(2025, 4, 28);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 4, 28, 1, 0);
 
         em.flush();
         em.clear();
@@ -84,14 +86,12 @@ class MyReservationServiceTest {
         Reservation reservation = new Reservation(member1, date, time, theme);
         reservationRepository.save(reservation);
 
-        Waiting waiting1 = new Waiting(member2, date, time, theme, 1L);
-        Waiting waiting2 = new Waiting(member3, date, time, theme, 2L);
-        waitingRepository.save(waiting1);
-        waitingRepository.save(waiting2);
+        Waiting waiting = new Waiting(member2, date, time, theme, createdAt);
+        waitingRepository.save(waiting);
 
-        myReservationService.removeWaiting(waiting1.getId());
+        myReservationService.removeWaiting(waiting.getId());
 
-        assertThat(waiting2.getRank()).isEqualTo(1);
+        assertThat(waitingRepository.findById(waiting.getId()).isPresent()).isFalse();
     }
 
     @Test
@@ -102,6 +102,7 @@ class MyReservationServiceTest {
         Theme theme = saveTheme(1L);
         ReservationTime time = saveTime(LocalTime.of(10, 0));
         LocalDate date = LocalDate.of(2025, 4, 28);
+        LocalDateTime createdAt = LocalDateTime.of(2025, 4, 28, 1, 0);
 
         em.flush();
         em.clear();
@@ -109,13 +110,12 @@ class MyReservationServiceTest {
         Reservation reservation = new Reservation(member1, date, time, theme);
         reservationRepository.save(reservation);
 
-        Waiting waiting = new Waiting(member2, date, time, theme, 1L);
+        Waiting waiting = new Waiting(member2, date, time, theme, createdAt);
         waitingRepository.save(waiting);
 
         assertThatThrownBy(() -> myReservationService.removeWaiting(waiting.getId() + 1))
             .isInstanceOf(NotFoundException.class)
             .hasMessageContaining("waiting");
-        assertThat(waiting.getRank()).isEqualTo(1); // 수정 X
     }
 
     private Member saveMember(Long tmp) {

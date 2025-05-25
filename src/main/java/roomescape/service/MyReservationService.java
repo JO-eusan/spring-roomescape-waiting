@@ -43,7 +43,9 @@ public class MyReservationService {
 
     private List<MyReservationResponse> getWaitingReservation(Member member) {
         return waitingRepository.findByMemberId(member.getId()).stream()
-            .map(w -> MyReservationResponse.from(w, String.format("%d번째", w.getRank())))
+            .map(w -> MyReservationResponse.from(w, String.format("%d번째",
+                waitingRepository.countByDateAndThemeIdAndTimeIdAndCreatedAtLessThan(
+                    w.getDate(), w.getTheme().getId(), w.getTime().getId(), w.getCreatedAt()) + 1)))
             .toList();
     }
 
@@ -51,13 +53,6 @@ public class MyReservationService {
         Waiting waiting = waitingRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("waiting"));
 
-        waitingRepository.deleteById(id);
-
-        List<Waiting> remainings = waitingRepository.findByDateAndThemeIdAndTimeId(
-            waiting.getDate(), waiting.getTheme().getId(), waiting.getTime().getId());
-
-        for (Waiting remaining : remainings) {
-            remaining.minusRank(1L);
-        }
+        waitingRepository.deleteById(waiting.getId());
     }
 }
