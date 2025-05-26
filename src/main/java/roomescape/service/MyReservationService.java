@@ -14,7 +14,7 @@ import roomescape.repository.jpa.JpaReservationRepository;
 import roomescape.repository.jpa.JpaWaitingRepository;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class MyReservationService {
 
     private final JpaReservationRepository reservationRepository;
@@ -26,7 +26,6 @@ public class MyReservationService {
         this.waitingRepository = waitingRepository;
     }
 
-    @Transactional(readOnly = true)
     public List<MyReservationResponse> findReservationsAndWaitingsByMemberId(Member member) {
         List<MyReservationResponse> checkedReservations = getCheckedReservation(member);
         List<MyReservationResponse> waitingReservations = getWaitingReservation(member);
@@ -50,6 +49,7 @@ public class MyReservationService {
             .toList();
     }
 
+    @Transactional
     public void removeWaiting(Member member, Long id) {
         Waiting waiting = waitingRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("waiting"));

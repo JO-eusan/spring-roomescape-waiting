@@ -21,7 +21,7 @@ import roomescape.repository.jpa.JpaReservationTimeRepository;
 import roomescape.repository.jpa.JpaThemeRepository;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class ReservationService {
 
     private final JpaReservationRepository reservationRepository;
@@ -38,14 +38,12 @@ public class ReservationService {
         this.memberRepository = memberRepository;
     }
 
-    @Transactional(readOnly = true)
     public List<ReservationResponse> findAllReservations() {
         return reservationRepository.findAll().stream()
             .map(ReservationResponse::from)
             .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<ReservationResponse> findReservationsByFilters(Long themeId, Long memberId,
         LocalDate dateFrom, LocalDate dateTo) {
         return reservationRepository.findByFilters(themeId, memberId, dateFrom, dateTo).stream()
@@ -53,6 +51,7 @@ public class ReservationService {
             .toList();
     }
 
+    @Transactional
     public ReservationResponse addReservationAfterNow(Member member, ReservationRequest request) {
         LocalDate date = request.date();
 
@@ -77,6 +76,7 @@ public class ReservationService {
         }
     }
 
+    @Transactional
     public ReservationResponse addReservation(ReservationRequest request) {
         Member member = memberRepository.findById(request.memberId())
             .orElseThrow(() -> new NotFoundException("member"));
@@ -100,6 +100,7 @@ public class ReservationService {
         }
     }
 
+    @Transactional
     public void removeReservation(Long id) {
         reservationRepository.deleteById(id);
     }

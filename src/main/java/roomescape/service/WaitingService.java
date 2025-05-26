@@ -23,7 +23,7 @@ import roomescape.repository.jpa.JpaThemeRepository;
 import roomescape.repository.jpa.JpaWaitingRepository;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class WaitingService {
 
     private final JpaWaitingRepository waitingRepository;
@@ -47,6 +47,7 @@ public class WaitingService {
             .toList();
     }
 
+    @Transactional
     public WaitingResponse addWaitingAfterNow(Member member, WaitingRequest request) {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         LocalDate date = request.date();
@@ -82,6 +83,7 @@ public class WaitingService {
         }
     }
 
+    @Transactional
     public void updateWaitingAndReservationStatus(Long waitingId, WaitingStatus status) {
         Waiting waiting = waitingRepository.findById(waitingId)
             .orElseThrow(() -> new NotFoundException("waiting"));
